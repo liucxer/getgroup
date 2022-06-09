@@ -14,7 +14,7 @@ struct group * gidtogrp(gid_t gid, char **buf, int len) {
     }
 
 	if (len != 0) {
-		bufsize = len
+		bufsize = len;
 	}
     *buf = malloc(bufsize);
     if (*buf == NULL) {
