@@ -69,13 +69,13 @@ func NewGroupFromName(name string) (*Group, error) {
 	length := int(C.getMemLength(grp.gr_mem))
 	hdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(grp.gr_mem)),
-		Len: length,
-		Cap: length,
+		Len:  length,
+		Cap:  length,
 	}
 	return &Group{
-		Name: C.GoString(grp.gr_name),
+		Name:   C.GoString(grp.gr_name),
 		Passwd: C.GoString(grp.gr_passwd),
-		Gid: uint32(grp.gr_gid),
-		Mem: *(*[]string)(unsafe.Pointer(&hdr)),
+		Gid:    uint32(grp.gr_gid),
+		Mem:    *(*[]string)(unsafe.Pointer(&hdr)),
 	}, nil
 }

@@ -7,12 +7,15 @@ package getgroup
 #include <grp.h>
 #include <unistd.h>
 
-struct group * gidtogrp(gid_t gid, char **buf) {
+struct group * gidtogrp(gid_t gid, char **buf, int len) {
     size_t bufsize = sysconf(_SC_GETGR_R_SIZE_MAX);
     if (bufsize == -1) {
         bufsize = 16384;
     }
 
+	if (len != 0) {
+		bufsize = len
+	}
     *buf = malloc(bufsize);
     if (*buf == NULL) {
         errno = ENOMEM;
@@ -53,9 +56,9 @@ import "reflect"
 
 //NewGroup returns a new Group given a gid
 //or an error if any occurred
-func NewGroup(gid uint32) (*Group, error) {
+func NewGroup(gid uint32, bufferSize int64) (*Group, error) {
 	var buf = new(*C.char)
-	grp, err := C.gidtogrp(C.gid_t(gid), buf)
+	grp, err := C.gidtogrp(C.gid_t(gid), buf, C.int(int32(bufferSize)))
 	defer C.free(unsafe.Pointer(*buf))
 	defer C.free(unsafe.Pointer(grp))
 
@@ -68,13 +71,13 @@ func NewGroup(gid uint32) (*Group, error) {
 	length := int(C.getMemLength(grp.gr_mem))
 	hdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(grp.gr_mem)),
-		Len: length,
-		Cap: length,
+		Len:  length,
+		Cap:  length,
 	}
 	return &Group{
-		Name: C.GoString(grp.gr_name),
+		Name:   C.GoString(grp.gr_name),
 		Passwd: C.GoString(grp.gr_passwd),
-		Gid: uint32(grp.gr_gid),
-		Mem: *(*[]string)(unsafe.Pointer(&hdr)),
+		Gid:    uint32(grp.gr_gid),
+		Mem:    *(*[]string)(unsafe.Pointer(&hdr)),
 	}, nil
 }
